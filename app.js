@@ -1,8 +1,11 @@
 const express = require('express');
 const mysql = require('mysql');
-
+const fs = require('fs');
+const path = require('path');
 const app = express();
 const port = 3000;
+
+app.use(express.static(path.join(__dirname, "js")));
 
 // Configuración de la conexión a la base de datos
 const connection = mysql.createConnection({
@@ -24,14 +27,20 @@ connection.connect((err) => {
 // Middleware para procesar datos JSON
 app.use(express.json());
 
-// //
-// app.get("/", (req, res) =>{
-//   const holaMundo = "hola mundo"
-//   console.log(holaMundo)
-// } )
+// Ruta para servir el archivo index.html
+app.get('/', (req, res) => {
+  fs.readFile('index.html', 'utf8', (err, data) => {
+    if (err) {
+      console.error('Error al leer el archivo index.html:', err);
+      res.status(500).send('Error al cargar la página');
+      return;
+    }
+    res.send(data);
+  });
+});
 
 // Ruta para guardar la información
-app.post('/guardar_informacion', (req, res) => {
+app.post('/guardada_correctamente', (req, res) => {
   const { expediente, nombre, apellido, fecha } = req.body;
 
   const sql = 'INSERT INTO expediente (expediente, nombre, apellido, fecha) VALUES (?, ?, ?, ?)';
@@ -64,7 +73,6 @@ process.on('SIGINT', () => {
     process.exit(0);
   });
 });
-
 function guardarInformacion() {
   const expediente = document.getElementById('expediente').value;
   const nombre = document.getElementById('nombre').value;
